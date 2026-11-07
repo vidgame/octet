@@ -16,14 +16,14 @@ internal static class Treemap
     private const int TileLimit = 28;
     private static readonly (Brush Fill, Brush Accent)[] Palette =
     [
-        (Brush("#3C4C91"), Brush("#9AAFFF")),
-        (Brush("#206258"), Brush("#70DFC4")),
-        (Brush("#664579"), Brush("#D5A7F0")),
-        (Brush("#75483C"), Brush("#F2AD93")),
-        (Brush("#295A76"), Brush("#88D4F4")),
-        (Brush("#703F62"), Brush("#F2A5D3")),
-        (Brush("#4A603D"), Brush("#B8DE95")),
-        (Brush("#6F5630"), Brush("#F0CA82"))
+        (TileFill("#354C8C", "#26345F"), Brush("#C2D0FF")),
+        (TileFill("#235F59", "#1A4442"), Brush("#A0F1DE")),
+        (TileFill("#634A7B", "#423452"), Brush("#E8CBFF")),
+        (TileFill("#74483B", "#54352D"), Brush("#FFD1BA")),
+        (TileFill("#2B5872", "#213F53"), Brush("#B2E4FC")),
+        (TileFill("#704662", "#4F3249"), Brush("#F9C6E5")),
+        (TileFill("#485D3C", "#35452F"), Brush("#D3EAB4")),
+        (TileFill("#6B5533", "#4D3E26"), Brush("#F5DCA4"))
     ];
 
     public static List<MapEntry> Entries(StorageItem folder)
@@ -101,6 +101,17 @@ internal static class Treemap
     {
         var color = (Color)ColorConverter.ConvertFromString(hex);
         var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
+    private static Brush TileFill(string light, string dark)
+    {
+        var brush = new LinearGradientBrush(
+            (Color)ColorConverter.ConvertFromString(light),
+            (Color)ColorConverter.ConvertFromString(dark),
+            new Point(0, 0),
+            new Point(1, 1));
         brush.Freeze();
         return brush;
     }

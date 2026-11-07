@@ -35,7 +35,7 @@ public partial class MainWindow : Window
     private bool closed;
 
     private sealed record Drive(string Path, string Label, long Capacity, long Free);
-    private sealed record TileVisual(MapEntry Entry, Button Button, ShapePath Icon, TextBlock Name, TextBlock Size);
+    private sealed record TileVisual(MapEntry Entry, Button Button, ShapePath Icon, TextBlock Name, TextBlock Size, TextBlock Share);
     private sealed record FolderVisit(StorageItem Folder, StorageItem? Selection, string Query);
 
     public MainWindow()
@@ -119,7 +119,7 @@ public partial class MainWindow : Window
                 Style = (Style)FindResource("DriveButton"),
                 Content = info,
                 CommandParameter = drive.Path,
-                ToolTip = $"Ouvrir {drive.Path} · {drive.Label}"
+                ToolTip = $"{drive.Path} · {drive.Label}\n{StorageText.Bytes(drive.Free)} libres sur {StorageText.Bytes(drive.Capacity)}"
             };
             AutomationProperties.SetName(button, $"Ouvrir le lecteur {drive.Path} {drive.Label}");
             button.Click += async (_, _) => await OpenSourceAsync(drive.Path);
@@ -340,6 +340,7 @@ public partial class MainWindow : Window
         FolderTitle.ToolTip = folder.DisplayName;
         FolderPath.Text = folder.FullPath;
         FolderPath.ToolTip = folder.FullPath;
+        FolderPath.Visibility = Show(folder.DisplayName != folder.FullPath);
         while (backHistory.TryPeek(out var visit) && visit.Folder == folder) backHistory.Pop();
         BackFolder.IsEnabled = backHistory.Count > 0;
         BackFolder.ToolTip = backHistory.TryPeek(out var previous)
@@ -426,15 +427,31 @@ public partial class MainWindow : Window
 
         foreach (var entry in mapEntries)
         {
-            var icon = MakeIcon(entry.Item is { IsDirectory: false } ? "FileIcon" : "FolderIcon", null, new Thickness(0, 0, 0, 7));
+            var icon = MakeIcon(entry.Item switch
+            {
+                null => "ListIcon",
+                { IsDirectory: true } => "FolderIcon",
+                _ => "FileIcon"
+            }, null, new Thickness(0, 0, 0, 6));
             icon.Stroke = entry.Accent;
             icon.HorizontalAlignment = HorizontalAlignment.Left;
             var name = new TextBlock { Text = entry.Name, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis };
-            var size = new TextBlock { Text = entry.SizeText, Foreground = entry.Accent, Margin = new Thickness(0, 3, 0, 0) };
-            var content = new StackPanel { Margin = new Thickness(10, 8, 9, 6), ClipToBounds = true };
-            content.Children.Add(icon);
-            content.Children.Add(name);
-            content.Children.Add(size);
+            var size = new TextBlock { Text = entry.SizeText, Foreground = entry.Accent, Margin = new Thickness(0, 2, 0, 0) };
+            var share = new TextBlock
+            {
+                Text = entry.ShareText,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = entry.Accent,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom
+            };
+            var labels = new StackPanel { VerticalAlignment = VerticalAlignment.Top, Children = { icon, name, size } };
+            var content = new Grid
+            {
+                Margin = new Thickness(10, 7, 10, 7),
+                ClipToBounds = true,
+                Children = { labels, share }
+            };
             var button = new Button
             {
                 Style = (Style)FindResource("TileButton"),
@@ -463,7 +480,7 @@ public partial class MainWindow : Window
             };
             button.PreviewKeyDown += ItemListKeyDown;
             MapCanvas.Children.Add(button);
-            tiles.Add(new TileVisual(entry, button, icon, name, size));
+            tiles.Add(new TileVisual(entry, button, icon, name, size, share));
         }
         LayoutMap();
     }
@@ -478,7 +495,7 @@ public partial class MainWindow : Window
         {
             var tile = tiles[index];
             var box = positions[index];
-            const double gap = 3;
+            const double gap = 4;
             var width = Math.Max(0, box.Width - gap);
             var height = Math.Max(0, box.Height - gap);
             tile.Button.Visibility = Show(width >= 5 && height >= 5);
@@ -486,11 +503,14 @@ public partial class MainWindow : Window
             tile.Button.Height = height;
             Canvas.SetLeft(tile.Button, box.X + gap / 2);
             Canvas.SetTop(tile.Button, box.Y + gap / 2);
-            tile.Name.Visibility = Show(width >= 54 && height >= 29);
-            tile.Size.Visibility = Show(width >= 75 && height >= 49);
-            tile.Icon.Visibility = Show(width >= 95 && height >= 74);
-            tile.Name.FontSize = width >= 220 && height >= 100 ? 18 : 13;
-            tile.Size.FontSize = width >= 220 && height >= 100 ? 14 : 11;
+            var large = width >= 220 && height >= 120;
+            tile.Name.Visibility = Show(width >= 52 && height >= 36);
+            tile.Size.Visibility = Show(width >= 72 && height >= 55);
+            tile.Icon.Visibility = Show(width >= 95 && height >= 76);
+            tile.Share.Visibility = Show(width >= 160 && height >= 138);
+            tile.Name.FontSize = large ? 19 : 13;
+            tile.Size.FontSize = large ? 15 : 12;
+            tile.Share.FontSize = width >= 340 && height >= 210 ? 42 : 26;
         }
     }
 

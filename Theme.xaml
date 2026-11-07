@@ -1,18 +1,19 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <SolidColorBrush x:Key="Background" Color="#161721"/>
-    <SolidColorBrush x:Key="Rail" Color="#1C1C29"/>
-    <SolidColorBrush x:Key="Panel" Color="#242432"/>
-    <SolidColorBrush x:Key="Raised" Color="#302C3B"/>
-    <SolidColorBrush x:Key="Line" Color="#403A4C"/>
-    <SolidColorBrush x:Key="Ink" Color="#FCF5F5"/>
-    <SolidColorBrush x:Key="Muted" Color="#BEB7CC"/>
-    <SolidColorBrush x:Key="Dim" Color="#A49AB3"/>
-    <SolidColorBrush x:Key="Accent" Color="#FFC39E"/>
-    <SolidColorBrush x:Key="AccentInk" Color="#382019"/>
-    <SolidColorBrush x:Key="Active" Color="#3F3040"/>
-    <SolidColorBrush x:Key="Green" Color="#AFDEC9"/>
-    <SolidColorBrush x:Key="Warning" Color="#F4CB89"/>
+    <SolidColorBrush x:Key="Background" Color="#10151E"/>
+    <SolidColorBrush x:Key="Rail" Color="#131A24"/>
+    <SolidColorBrush x:Key="Panel" Color="#18212D"/>
+    <SolidColorBrush x:Key="Raised" Color="#222E3D"/>
+    <SolidColorBrush x:Key="Line" Color="#2E3B4C"/>
+    <SolidColorBrush x:Key="Ink" Color="#F2F6FC"/>
+    <SolidColorBrush x:Key="Muted" Color="#B1BFD1"/>
+    <SolidColorBrush x:Key="Dim" Color="#94A5BA"/>
+    <SolidColorBrush x:Key="Accent" Color="#89E8D3"/>
+    <SolidColorBrush x:Key="AccentInk" Color="#102C2A"/>
+    <SolidColorBrush x:Key="Active" Color="#203B42"/>
+    <SolidColorBrush x:Key="ActiveLine" Color="#4F938A"/>
+    <SolidColorBrush x:Key="Green" Color="#89E8AF"/>
+    <SolidColorBrush x:Key="Warning" Color="#F3CE87"/>
 
     <Geometry x:Key="FolderIcon">M1.5,4 H6.5 L8.5,6 H14.5 V13 H1.5 Z</Geometry>
     <Geometry x:Key="FolderAddIcon">M1,4 H6 L8,6 H15 V13 H1 Z M8,7.5 V11.5 M6,9.5 H10</Geometry>
@@ -29,6 +30,10 @@
     <Geometry x:Key="ExternalIcon">M8,2 H14 V8 M14,2 L7,9 M11.5,9.5 V14 H2 V4.5 H6.5</Geometry>
     <Geometry x:Key="LinkIcon">M6.2,4.1 L8.2,2.1 A3.2,3.2 0 0 1 12.7,6.6 L10.7,8.6 M9.8,11.9 L7.8,13.9 A3.2,3.2 0 0 1 3.3,9.4 L5.3,7.4 M5.5,10.5 L10.5,5.5</Geometry>
     <Geometry x:Key="ClearIcon">M4,4 L12,12 M12,4 L4,12</Geometry>
+    <Geometry x:Key="MapIcon">M1.5,2 H8 V14 H1.5 Z M10.5,2 H14.5 V7 H10.5 Z M10.5,9.5 H14.5 V14 H10.5 Z</Geometry>
+    <Geometry x:Key="ListIcon">M1.5,4 H2.5 M5.5,4 H14.5 M1.5,8 H2.5 M5.5,8 H14.5 M1.5,12 H2.5 M5.5,12 H14.5</Geometry>
+    <Geometry x:Key="RankIcon">M2,13.5 H14 M3,10.5 V7.5 M8,10.5 V5 M13,10.5 V2.5</Geometry>
+    <Geometry x:Key="StorageIcon">M1.5,4 L8,1.5 L14.5,4 L8,6.5 Z M1.5,8 L8,10.5 L14.5,8 M1.5,12 L8,14.5 L14.5,12</Geometry>
 
     <Style x:Key="Icon" TargetType="Path">
         <Setter Property="Width" Value="15"/>
@@ -70,6 +75,15 @@
         <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+
+    <Style x:Key="StatIcon" TargetType="Border">
+        <Setter Property="Width" Value="34"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Background" Value="{StaticResource Raised}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,11,0"/>
     </Style>
 
     <Style TargetType="Button">
@@ -129,7 +143,7 @@
         <Style.Triggers>
             <Trigger Property="Tag" Value="Active">
                 <Setter Property="Background" Value="{StaticResource Active}"/>
-                <Setter Property="BorderBrush" Value="#A77E82"/>
+                <Setter Property="BorderBrush" Value="{StaticResource ActiveLine}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -154,8 +168,8 @@
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Frame" Property="Background" Value="{StaticResource Active}"/>
-                            <Setter TargetName="Frame" Property="BorderBrush" Value="#805F72"/>
-                            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+                            <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource ActiveLine}"/>
+                            <Setter Property="Foreground" Value="{StaticResource Accent}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource Accent}"/>
@@ -372,13 +386,13 @@
     <Style x:Key="TileButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="MinHeight" Value="0"/>
         <Setter Property="BorderThickness" Value="2"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="#50FFFFFF"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
         <Style.Triggers>
             <Trigger Property="Tag" Value="Selected">
-                <Setter Property="BorderBrush" Value="{StaticResource Ink}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
