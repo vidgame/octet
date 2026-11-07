@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     private const int UseImmersiveDarkMode = 20;
     private readonly DispatcherTimer statusTimer;
     private readonly List<TileVisual> tiles = [];
+    private readonly Dictionary<string, ScanResult> scanCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Stack<FolderVisit> backHistory = new();
     private readonly VectorTree vectorTree = new();
     private List<MapEntry> mapEntries = [];
@@ -52,7 +53,7 @@ public partial class MainWindow : Window
     private async void WindowLoaded(object sender, RoutedEventArgs e)
     {
         var args = Environment.GetCommandLineArgs();
-        if (args.Length == 2) _ = ScanAsync(args[1]);
+        if (args.Length == 2) _ = OpenSourceAsync(args[1]);
         await RefreshDrivesAsync();
     }
 
@@ -118,10 +119,10 @@ public partial class MainWindow : Window
                 Style = (Style)FindResource("DriveButton"),
                 Content = info,
                 CommandParameter = drive.Path,
-                ToolTip = $"Analyser {drive.Path} · {drive.Label}"
+                ToolTip = $"Ouvrir {drive.Path} · {drive.Label}"
             };
-            AutomationProperties.SetName(button, $"Analyser le lecteur {drive.Path} {drive.Label}");
-            button.Click += async (_, _) => await ScanAsync(drive.Path);
+            AutomationProperties.SetName(button, $"Ouvrir le lecteur {drive.Path} {drive.Label}");
+            button.Click += async (_, _) => await OpenSourceAsync(drive.Path);
             DriveList.Children.Add(button);
         }
 
@@ -176,20 +177,20 @@ public partial class MainWindow : Window
         if (scanWork is not null) return;
         var dialog = new OpenFolderDialog { Title = "Choisir un dossier à analyser" };
         if (scope is not null) dialog.InitialDirectory = scope.FullPath;
-        if (dialog.ShowDialog(this) == true) await ScanAsync(dialog.FolderName);
+        if (dialog.ShowDialog(this) == true) await OpenSourceAsync(dialog.FolderName);
     }
 
     private async void StartDriveClicked(object sender, RoutedEventArgs e)
     {
-        if (startDrive is not null) await ScanAsync(startDrive);
+        if (startDrive is not null) await OpenSourceAsync(startDrive);
     }
 
     private async void RefreshClicked(object sender, RoutedEventArgs e)
     {
-        if (scan is not null) await ScanAsync(scan.Root.FullPath, preserveFolder: true);
+        if (scan is not null) await OpenSourceAsync(scan.Root.FullPath, refresh: true);
     }
 
-    private async Task ScanAsync(string path, bool preserveFolder = false)
+    private async Task OpenSourceAsync(string path, bool refresh = false)
     {
         if (scanWork is not null || closed) return;
         try
@@ -202,10 +203,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (!refresh && scanCache.TryGetValue(path, out var cached))
+        {
+            if (scan != cached) ShowScan(cached);
+            return;
+        }
+
         using var work = new CancellationTokenSource();
-        var oldScope = preserveFolder ? scope : null;
-        var oldSelection = preserveFolder ? selected : null;
-        var oldQuery = preserveFolder ? SearchBox.Text : "";
         scanWork = work;
         CancelResults();
         SetScanMode(true);
@@ -251,15 +255,8 @@ public partial class MainWindow : Window
         if (closed) return;
         if (result is not null)
         {
-            vectorTree.SetFolder(null);
-            vectorScope = null;
-            scan = result;
-            var folder = ResolveItem(result.Root, oldScope) is { IsDirectory: true } restored ? restored : result.Root;
-            var selection = ResolveItem(result.Root, oldSelection);
-            RestoreBackHistory(preserveFolder ? result.Root : null);
-            SetScanMode(false);
-            ShowFolder(folder, selection, oldQuery);
-            RestoreStatus();
+            scanCache[path] = result;
+            ShowScan(result, preserveFolder: refresh);
             await RefreshDrivesAsync();
         }
         else
@@ -270,6 +267,20 @@ public partial class MainWindow : Window
             UpdateView();
             ShowStatus(message!, warning ? "Warning" : "Dim");
         }
+    }
+
+    private void ShowScan(ScanResult result, bool preserveFolder = false)
+    {
+        var folder = preserveFolder && ResolveItem(result.Root, scope) is { IsDirectory: true } restored ? restored : result.Root;
+        var selection = preserveFolder ? ResolveItem(result.Root, selected) : null;
+        var query = preserveFolder ? SearchBox.Text : "";
+        RestoreBackHistory(preserveFolder ? result.Root : null);
+        vectorTree.SetFolder(null);
+        vectorScope = null;
+        scan = result;
+        SetScanMode(false);
+        ShowFolder(folder, selection, query);
+        RestoreStatus();
     }
 
     private static StorageItem? ResolveItem(StorageItem root, StorageItem? oldItem)
