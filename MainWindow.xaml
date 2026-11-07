@@ -1,0 +1,483 @@
+<Window x:Class="Octet.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Octet — Explorateur de stockage" Icon="Octet.ico" Width="1380" Height="880" MinWidth="950" MinHeight="640"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource Background}" Foreground="{StaticResource Ink}"
+        FontFamily="Segoe UI" FontSize="13" Language="fr-FR" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        Loaded="WindowLoaded" SourceInitialized="WindowSourceInitialized" Closed="WindowClosed" PreviewKeyDown="WindowKeyDown" PreviewMouseDown="WindowMouseDown">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Background="{StaticResource Rail}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="20,0">
+            <DockPanel>
+                <Button x:Name="ChooseFolder" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="13,8"
+                        AutomationProperties.Name="Choisir un dossier" ToolTip="Choisir un dossier (Ctrl + O)" Click="ChooseFolderClicked">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource Icon}" Data="{StaticResource FolderAddIcon}" Stroke="{StaticResource Accent}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Choisir un dossier"/>
+                    </StackPanel>
+                </Button>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="38" Height="38" CornerRadius="11" Background="{StaticResource Accent}" Margin="0,0,11,0">
+                        <Path Fill="{StaticResource AccentInk}" Width="18" Height="18" Stretch="Uniform"
+                              Data="M0,0 H11 V18 H0 Z M13,0 H18 V8 H13 Z M13,10 H18 V18 H13 Z"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Octet" FontSize="21" FontWeight="SemiBold" LineHeight="23" LineStackingStrategy="BlockLineHeight"/>
+                        <TextBlock Text="Explorateur de stockage" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="210"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Background="{StaticResource Rail}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0" Padding="15,21">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="2,0,0,15">
+                        <TextBlock Text="Vos lecteurs" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="Sélectionnez un lecteur pour l’analyser." FontSize="11" Foreground="{StaticResource Muted}"
+                                   Margin="0,5,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <Border DockPanel.Dock="Bottom" Background="{StaticResource Panel}" CornerRadius="9" Padding="11,9" Margin="0,14,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="{StaticResource Green}" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Analyse locale" Foreground="{StaticResource Green}" FontSize="11" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <TextBlock Text="Vos fichiers restent sur ce PC." Foreground="{StaticResource Muted}" FontSize="11"
+                                       TextWrapping="Wrap" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="DriveList">
+                            <TextBlock Text="Recherche des lecteurs…" Foreground="{StaticResource Dim}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="23,19,23,17">
+                <Border x:Name="HomeView" Style="{StaticResource Card}" CornerRadius="19" VerticalAlignment="Center" MaxWidth="1060">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                            <GradientStop Color="#222433" Offset="0"/>
+                            <GradientStop Color="#2B2738" Offset="0.54"/>
+                            <GradientStop Color="#3B2938" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid Margin="31,30">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.35*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,6,20,6" VerticalAlignment="Center">
+                            <Border Background="#493141" CornerRadius="12" Padding="10,5" HorizontalAlignment="Left">
+                                <TextBlock Text="Bienvenue dans Octet" Foreground="{StaticResource Accent}" FontWeight="SemiBold" FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Explorez votre stockage." FontSize="37" FontWeight="SemiBold"
+                                       TextWrapping="Wrap" LineHeight="44" Margin="0,13,0,10"/>
+                            <TextBlock Text="Visualisez l’espace occupé et retrouvez vos dossiers et fichiers les plus volumineux."
+                                       Foreground="{StaticResource Muted}" FontSize="15" TextWrapping="Wrap" LineHeight="22" Margin="0,0,0,21"/>
+                            <WrapPanel>
+                                <Button x:Name="StartDrive" Style="{StaticResource PrimaryButton}" Padding="13,9"
+                                        Margin="0,0,8,6" IsEnabled="False" Click="StartDriveClicked">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Style="{StaticResource Icon}" Data="{StaticResource DriveIcon}" Stroke="{StaticResource AccentInk}" Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="StartDriveText" Text="Analyser le lecteur principal"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="13,9" Margin="0,0,0,6" Click="ChooseFolderClicked">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Style="{StaticResource Icon}" Data="{StaticResource FolderAddIcon}" Stroke="{StaticResource Accent}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Choisir un dossier"/>
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
+                        </StackPanel>
+                        <Viewbox Grid.Column="1" StretchDirection="DownOnly" IsHitTestVisible="False" VerticalAlignment="Center">
+                            <Grid Width="336" Height="254" AutomationProperties.Name="Aperçu de l’arbre des dossiers">
+                                <Grid.Resources>
+                                    <Style x:Key="PreviewNode" TargetType="Border">
+                                        <Setter Property="Width" Value="118"/>
+                                        <Setter Property="Height" Value="36"/>
+                                        <Setter Property="Background" Value="{StaticResource Raised}"/>
+                                        <Setter Property="BorderBrush" Value="#68546B"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                    </Style>
+                                </Grid.Resources>
+                                <Border Background="{StaticResource Rail}" BorderBrush="#5B485D" BorderThickness="1" CornerRadius="15"/>
+                                <StackPanel Orientation="Horizontal" Margin="17,16,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                    <Path Style="{StaticResource Icon}" Data="{StaticResource TreeIcon}" Stroke="{StaticResource Accent}" Margin="0,0,7,0"/>
+                                    <TextBlock Text="APERÇU DE L’ARBRE" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Canvas>
+                                    <Path Stroke="#8E748D" StrokeThickness="1.5"
+                                          Data="M168,91 V103 Q168,109 162,109 H90 Q84,109 84,115 V125 M168,103 Q168,109 174,109 H246 Q252,109 252,115 V125 M84,161 V192 M252,161 V192"/>
+                                    <Border Canvas.Left="100" Canvas.Top="51" Width="136" Height="40" CornerRadius="9" Background="{StaticResource Accent}">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Path Style="{StaticResource Icon}" Data="{StaticResource FolderIcon}" Stroke="{StaticResource AccentInk}" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Mes dossiers" Foreground="{StaticResource AccentInk}" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Canvas.Left="25" Canvas.Top="125" Style="{StaticResource PreviewNode}">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Path Style="{StaticResource Icon}" Data="{StaticResource FolderIcon}" Stroke="{StaticResource Green}" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Photos" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Canvas.Left="193" Canvas.Top="125" Style="{StaticResource PreviewNode}">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Path Style="{StaticResource Icon}" Data="{StaticResource FolderIcon}" Stroke="{StaticResource Green}" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Projets" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Canvas.Left="25" Canvas.Top="192" Style="{StaticResource PreviewNode}" Background="{StaticResource Panel}">
+                                        <TextBlock Text="Vacances" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border Canvas.Left="193" Canvas.Top="192" Style="{StaticResource PreviewNode}" Background="{StaticResource Panel}">
+                                        <TextBlock Text="Archives" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Canvas>
+                            </Grid>
+                        </Viewbox>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="ScanView" Visibility="Collapsed" Style="{StaticResource Card}" CornerRadius="17" MaxWidth="560"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="26">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="36" Height="36" CornerRadius="10" Background="{StaticResource Active}" Margin="0,0,10,0">
+                                <Path Style="{StaticResource Icon}" Data="{StaticResource DriveIcon}" Stroke="{StaticResource Accent}"/>
+                            </Border>
+                            <TextBlock Text="Analyse en cours" Foreground="{StaticResource Accent}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock x:Name="ScanningTitle" Text="Lecture des fichiers" FontSize="26" FontWeight="SemiBold" Margin="0,12,0,10"/>
+                        <Border Background="{StaticResource Rail}" CornerRadius="8" Padding="10,8">
+                            <TextBlock x:Name="ScanningPath" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
+                        </Border>
+                        <DockPanel Margin="0,16,0,0">
+                            <Button x:Name="CancelScan" Content="Annuler" DockPanel.Dock="Right" Click="CancelScanClicked" Margin="10,0,0,0"/>
+                            <TextBlock x:Name="ScanningCounts" VerticalAlignment="Center" FontSize="14" Foreground="{StaticResource Accent}"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <Grid x:Name="Dashboard" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Margin="0,0,0,14">
+                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <Button x:Name="BackFolder" Click="BackFolderClicked" IsEnabled="False" MinHeight="40" Padding="12,7"
+                                    Background="{StaticResource Active}" BorderBrush="{StaticResource Accent}"
+                                    ToolTipService.ShowOnDisabled="True" AutomationProperties.Name="Retour au dossier précédent">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource Icon}" Data="{StaticResource BackIcon}" Stroke="{StaticResource Accent}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Retour"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="UpFolder" ToolTip="Dossier parent (Alt + Haut)" AutomationProperties.Name="Dossier parent"
+                                    Click="UpFolderClicked" Width="40" MinHeight="40" Padding="0" Margin="7,0,0,0" IsEnabled="False">
+                                <Path Style="{StaticResource Icon}" Data="{StaticResource UpIcon}"/>
+                            </Button>
+                        </StackPanel>
+                        <Button DockPanel.Dock="Right" VerticalAlignment="Center" Margin="12,0,0,0"
+                                ToolTip="Relire la source après une modification" Click="RefreshClicked">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Style="{StaticResource Icon}" Data="{StaticResource RefreshIcon}" Margin="0,0,7,0"/>
+                                <TextBlock Text="Réanalyser"/>
+                            </StackPanel>
+                        </Button>
+                        <StackPanel>
+                            <TextBlock Text="ANALYSE DU STOCKAGE" Style="{StaticResource Caption}"/>
+                            <TextBlock x:Name="FolderTitle" FontSize="30" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,1,0,3"/>
+                            <TextBlock x:Name="FolderPath" FontSize="12" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,13">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource Card}" Padding="13,8" Margin="0,0,5,0">
+                            <StackPanel>
+                                <TextBlock Text="TAILLE ANALYSÉE" Style="{StaticResource Caption}"/>
+                                <TextBlock x:Name="TotalSize" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource Accent}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource Card}" Padding="13,8" Margin="5,0">
+                            <StackPanel>
+                                <TextBlock Text="FICHIERS" Style="{StaticResource Caption}"/>
+                                <TextBlock x:Name="TotalFiles" FontSize="22" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Padding="13,8" Margin="5,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="SOUS-DOSSIERS" Style="{StaticResource Caption}"/>
+                                <TextBlock x:Name="TotalFolders" FontSize="22" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <DockPanel Grid.Row="2" Margin="0,0,0,11">
+                        <Grid Width="228" DockPanel.Dock="Right" Margin="10,0,0,0">
+                            <TextBox x:Name="SearchBox" AutomationProperties.Name="Rechercher un nom dans ce dossier" Padding="30,6,30,6"
+                                     TextChanged="SearchChanged" ToolTip="Recherche dans ce dossier et ses sous-dossiers (Ctrl + F)"/>
+                            <Path Style="{StaticResource Icon}" Data="{StaticResource SearchIcon}"
+                                  HorizontalAlignment="Left" Margin="10,0,0,0" IsHitTestVisible="False"/>
+                            <TextBlock x:Name="SearchHint" Text="Rechercher un nom…" IsHitTestVisible="False" Margin="31,0,0,0"
+                                       VerticalAlignment="Center" Foreground="{StaticResource Dim}"/>
+                            <Button x:Name="ClearSearch" HorizontalAlignment="Right" Width="28" MinHeight="0"
+                                    Background="Transparent" BorderThickness="0" Padding="0" Visibility="Collapsed"
+                                    AutomationProperties.Name="Effacer la recherche" Click="ClearSearchClicked">
+                                <Path Style="{StaticResource Icon}" Data="{StaticResource ClearIcon}" Width="12" Height="12"/>
+                            </Button>
+                        </Grid>
+                        <Border Background="{StaticResource Rail}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                                CornerRadius="8" Padding="3" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="MapTab" Content="Carte" GroupName="View" Style="{StaticResource Segment}" IsChecked="True" Checked="ViewChanged"/>
+                                <RadioButton x:Name="VectorTab" GroupName="View" Style="{StaticResource Segment}" Checked="ViewChanged"
+                                             AutomationProperties.Name="Arbre des fichiers et dossiers">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Style="{StaticResource Icon}" Data="{StaticResource TreeIcon}" Width="13" Height="13" Margin="0,0,7,0"/>
+                                        <TextBlock Text="Arbre"/>
+                                    </StackPanel>
+                                </RadioButton>
+                                <RadioButton x:Name="TreeTab" Content="Liste" GroupName="View" Style="{StaticResource Segment}" Checked="ViewChanged"
+                                             AutomationProperties.Name="Liste complète des fichiers et dossiers"/>
+                                <RadioButton x:Name="FilesTab" Content="Gros fichiers" GroupName="View" Style="{StaticResource Segment}" Checked="ViewChanged"/>
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
+
+                    <Grid Grid.Row="3">
+                        <Grid x:Name="MapView">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="236"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource Card}" Padding="12" Margin="0,0,9,0">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Margin="2,0,0,10">
+                                        <TextBlock Text="Carte des tailles" Style="{StaticResource SectionTitle}"/>
+                                        <TextBlock Text="Surface proportionnelle à la taille · Double-clic pour explorer" Foreground="{StaticResource Muted}"
+                                                   FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                    <Grid>
+                                        <Canvas x:Name="MapCanvas" ClipToBounds="True" SizeChanged="MapSizeChanged"/>
+                                        <TextBlock x:Name="MapEmpty" Text="Aucune taille à représenter. Consultez la liste pour voir les éléments de 0 o."
+                                                   Foreground="{StaticResource Muted}" MaxWidth="300" TextAlignment="Center" TextWrapping="Wrap"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                    </Grid>
+                                </DockPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Padding="10">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Margin="3,1,0,8">
+                                        <TextBlock Text="Répartition" Style="{StaticResource SectionTitle}"/>
+                                        <TextBlock Text="Dans ce dossier" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel DockPanel.Dock="Bottom" Margin="3,8,3,0">
+                                        <Border Height="1" Background="{StaticResource Line}" Margin="0,0,0,8"/>
+                                        <TextBlock x:Name="MapSelectionName" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock x:Name="MapSelectionInfo" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                        <Button x:Name="OpenMapSelection" HorizontalAlignment="Left" Padding="8,4" MinHeight="27"
+                                                Margin="0,7,0,0" Click="OpenMapSelectionClicked" Visibility="Collapsed">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Explorer le dossier" FontSize="11"/>
+                                                <Path Style="{StaticResource Icon}" Data="{StaticResource RightIcon}" Width="12" Height="12" Margin="6,0,0,0"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                    <ListBox x:Name="MapList" SelectionChanged="MapSelectionChanged" MouseDoubleClick="MapListDoubleClick" PreviewKeyDown="ItemListKeyDown"
+                                             AutomationProperties.Name="Répartition des tailles">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ToolTip="{Binding Tooltip}">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" Margin="0,0,5,0"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding ShareText}" Foreground="{Binding Accent}" FontSize="11"/>
+                                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding SizeText}" Foreground="{StaticResource Muted}"
+                                                               FontSize="11" Margin="0,1,0,5"/>
+                                                    <ProgressBar Grid.Row="2" Grid.ColumnSpan="2" Maximum="100" Value="{Binding Share, Mode=OneWay}" Foreground="{Binding Accent}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border x:Name="VectorView" Style="{StaticResource Card}" Padding="12" Visibility="Collapsed">
+                            <DockPanel>
+                                <DockPanel DockPanel.Dock="Top" Margin="2,0,2,10">
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <Button Content="−" Width="30" Padding="0,5" Margin="0,0,4,0" Click="ZoomOutTreeClicked"
+                                                ToolTip="Dézoomer l’arbre" AutomationProperties.Name="Dézoomer l’arbre"/>
+                                        <Button Content="+" Width="30" Padding="0,5" Margin="0,0,8,0" Click="ZoomInTreeClicked"
+                                                ToolTip="Zoomer sur l’arbre" AutomationProperties.Name="Zoomer sur l’arbre"/>
+                                        <Button Content="Réinitialiser la vue" Padding="9,5" Margin="0,0,6,0" Click="ResetTreeViewClicked"
+                                                ToolTip="Revenir au début de l’arbre à la taille d’origine"/>
+                                        <Button Content="Voir la liste" Padding="9,5" Click="BrowseListClicked"/>
+                                    </StackPanel>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Arbre du dossier" Style="{StaticResource SectionTitle}"/>
+                                        <TextBlock Text="+ sur un dossier pour le déplier · Molette pour zoomer · Glissez le fond pour déplacer la vue"
+                                                   Foreground="{StaticResource Muted}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DockPanel>
+                                <Border Background="{StaticResource Rail}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="8">
+                                    <ContentControl x:Name="VectorTreeHost" Focusable="False"
+                                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                                </Border>
+                            </DockPanel>
+                        </Border>
+
+                        <Border x:Name="TreeViewPanel" Style="{StaticResource Card}" Padding="12" Visibility="Collapsed">
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Top" Margin="2,0,12,7">
+                                    <StackPanel>
+                                        <TextBlock Text="Liste complète" Style="{StaticResource SectionTitle}"/>
+                                        <TextBlock Text="Dépliez les dossiers avec la flèche · Éléments triés par taille" Foreground="{StaticResource Muted}"
+                                                   FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <TextBlock Text="TAILLE" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,7,0"/>
+                                </Grid>
+                                <Grid>
+                                    <TreeView x:Name="FolderTree" Background="Transparent" BorderThickness="0" Foreground="{StaticResource Ink}"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"
+                                              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                                              SelectedItemChanged="TreeSelectionChanged" PreviewKeyDown="ItemListKeyDown" AutomationProperties.Name="Arborescence des fichiers">
+                                        <TreeView.ItemsPanel>
+                                            <ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate>
+                                        </TreeView.ItemsPanel>
+                                        <TreeView.ItemTemplate>
+                                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                                <Grid Margin="0,0,10,0" Background="Transparent" ToolTip="{Binding FullPath}" PreviewMouseLeftButtonDown="TreeHeaderMouseDown">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="24"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="82"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Path Style="{StaticResource ItemIcon}" HorizontalAlignment="Left"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,9,0"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Kind}" Foreground="{StaticResource Dim}" FontSize="11" VerticalAlignment="Center" Margin="0,0,9,0"/>
+                                                    <TextBlock Grid.Column="3" Text="{Binding SizeText}" Foreground="{StaticResource Accent}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </HierarchicalDataTemplate>
+                                        </TreeView.ItemTemplate>
+                                    </TreeView>
+                                    <TextBlock x:Name="TreeEmpty" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DockPanel>
+                        </Border>
+
+                        <Border x:Name="ResultsView" Style="{StaticResource Card}" Padding="12" Visibility="Collapsed">
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Top" Margin="2,0,12,7">
+                                    <StackPanel>
+                                        <TextBlock x:Name="ResultsTitle" Style="{StaticResource SectionTitle}"/>
+                                        <TextBlock x:Name="ResultsInfo" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <TextBlock Text="TAILLE" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,7,0"/>
+                                </Grid>
+                                <Grid>
+                                    <ListBox x:Name="ResultsList" SelectionChanged="ResultSelectionChanged" MouseDoubleClick="ResultDoubleClick"
+                                             PreviewKeyDown="ItemListKeyDown" AutomationProperties.Name="Fichiers ou dossiers trouvés">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ToolTip="{Binding FullPath}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="24"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Path Style="{StaticResource ItemIcon}" HorizontalAlignment="Left"/>
+                                                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding Location}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Dim}" FontSize="11" Margin="0,2,0,0"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding SizeText}" Foreground="{StaticResource Accent}" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <TextBlock x:Name="ResultsEmpty" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{StaticResource Rail}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="17,9,19,8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <Path Style="{StaticResource Icon}" Data="{StaticResource LinkIcon}" Margin="0,0,7,0"/>
+                        <TextBlock Text="CHEMIN" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button x:Name="RevealButton" DockPanel.Dock="Right" Click="RevealClicked" IsEnabled="False"
+                            AutomationProperties.Name="Dans l’Explorateur" ToolTip="Sélectionner cet élément dans l’Explorateur Windows"
+                            Margin="7,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{StaticResource Icon}" Data="{StaticResource ExternalIcon}" Stroke="{StaticResource Accent}" Margin="0,0,7,0"/>
+                            <TextBlock Text="Dans l’Explorateur"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="CopyButton" DockPanel.Dock="Right" Click="CopyClicked" IsEnabled="False"
+                            AutomationProperties.Name="Copier le chemin complet" Margin="7,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Style="{StaticResource Icon}" Data="{StaticResource CopyIcon}" Margin="0,0,7,0"/>
+                            <TextBlock Text="Copier"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBox x:Name="SelectionPath" IsReadOnly="True" IsEnabled="False" Text="Aucun élément sélectionné"
+                             FontFamily="Consolas" FontSize="13" MinHeight="34" MaxHeight="68" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Chemin complet de la sélection"/>
+                </DockPanel>
+                <DockPanel Grid.Row="1" Margin="1,6,1,0">
+                    <TextBlock DockPanel.Dock="Right" Text="Tailles logiques" Foreground="{StaticResource Dim}" FontSize="11" Margin="10,0,0,0"
+                               ToolTip="Somme des tailles des fichiers. La place réellement occupée peut différer."/>
+                    <Ellipse x:Name="StatusDot" DockPanel.Dock="Left" Width="6" Height="6" Fill="{StaticResource Dim}" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="StatusText" Text="Choisissez un lecteur ou un dossier pour démarrer." Foreground="{StaticResource Muted}"
+                               FontSize="11" TextTrimming="CharacterEllipsis" AutomationProperties.LiveSetting="Polite"/>
+                </DockPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
